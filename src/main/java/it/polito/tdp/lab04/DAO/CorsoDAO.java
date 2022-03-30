@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -38,8 +39,10 @@ public class CorsoDAO {
 
 				// Crea un nuovo JAVA Bean Corso
 				// Aggiungi il nuovo oggetto Corso alla lista corsi
+				corsi.add(new Corso(codins,numeroCrediti,nome,periodoDidattico));
 			}
-
+			rs.close();
+			st.close();
 			conn.close();
 			
 			return corsi;
@@ -50,20 +53,56 @@ public class CorsoDAO {
 			throw new RuntimeException("Errore Db", e);
 		}
 	}
-	
-	
-	/*
-	 * Dato un codice insegnamento, ottengo il corso
-	 */
-	public void getCorso(Corso corso) {
-		// TODO
-	}
 
 	/*
 	 * Ottengo tutti gli studenti iscritti al Corso
 	 */
-	public void getStudentiIscrittiAlCorso(Corso corso) {
-		// TODO
+	public List<Studente> getStudentiIscrittiAlCorso(Corso corso) {
+		String sql = "SELECT s.matricola, s.cognome, s.nome, s.CDS "
+					+ "FROM studente s, iscrizione i "
+					+ "WHERE s.matricola=i.matricola AND i.codins=?";
+		List<Studente> result = new ArrayList<Studente>();
+		try {
+				Connection conn = ConnectDB.getConnection();
+				PreparedStatement st = conn.prepareStatement(sql);
+				st.setString(1, corso.getCodins());
+				ResultSet rs= st.executeQuery();
+				while(rs.next()) {
+					result.add(new Studente(rs.getInt("matricola"),rs.getString("cognome"),rs.getString("nome"),rs.getString("CDS")));
+				}
+				rs.close();
+				st.close();
+				conn.close();
+				return result;
+		} catch(SQLException e) {
+				System.err.println("Errore nel DAO");
+				e.printStackTrace();
+				return null;
+		}
+	}
+	
+	public List<Corso> getCorsiPerStudente(int matricola) {
+		String sql = "SELECT c.codins,c.crediti,c.nome,c.pd "
+				+ "FROM iscrizione i, corso c "
+				+ "WHERE i.codins=c.codins AND i.matricola=?";
+		List<Corso> result = new ArrayList<Corso>();
+		try {
+				Connection conn = ConnectDB.getConnection();
+				PreparedStatement st = conn.prepareStatement(sql);
+				st.setInt(1, matricola);
+				ResultSet rs= st.executeQuery();
+				while(rs.next()) {
+					result.add(new Corso(rs.getString("codins"),rs.getInt("crediti"),rs.getString("nome"),rs.getInt("pd")));
+				}
+				rs.close();
+				st.close();
+				conn.close();
+				return result;
+		} catch(SQLException e) {
+				System.err.println("Errore nel DAO");
+				e.printStackTrace();
+				return null;
+		}
 	}
 
 	/*
