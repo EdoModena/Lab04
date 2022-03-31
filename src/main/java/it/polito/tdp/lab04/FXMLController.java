@@ -148,12 +148,16 @@ public class FXMLController {
     			corso=c;
     		}
     	}
-    	boolean cer=model.cerca(corso, s);
-    	if(cer==true) {
-    		txtrisultato.setText("Studente già iscritto a questo corso");
+    	if(model.cerca(corso, s)) {
+    		txtrisultato.setText("Studente già iscritto al corso");
+    		return;
+    	}
+    	boolean isc=model.iscriviStudenteACorso(corso, s);
+    	if(isc==true) {
+    		txtrisultato.setText("Studente iscritto al corso!");
     	}
     	else {
-    		txtrisultato.setText("Studente non ancora iscritto a questo corso");
+    		txtrisultato.setText("Studente non iscritto al corso!");
     	}
     }
 
